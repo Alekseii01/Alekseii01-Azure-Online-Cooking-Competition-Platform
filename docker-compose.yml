@@ -1,0 +1,43 @@
+services:
+  db-init:
+    build: .
+    container_name: cooking-db-init
+    env_file:
+      - .env
+    command: python -m sql.init_db
+
+  user-service:
+    build: .
+    container_name: cooking-user-service
+    env_file:
+      - .env
+    command: python -m uvicorn user_service.app:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+
+  competition-service:
+    build: .
+    container_name: cooking-competition-service
+    env_file:
+      - .env
+    command: python -m uvicorn competition_service.app:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+
+  recipe-service:
+    build: .
+    container_name: cooking-recipe-service
+    env_file:
+      - .env
+    command: python -m uvicorn recipe_service.app:app --host 0.0.0.0 --port 8002
+    ports:
+      - "8002:8002"
+
+  feedback-service:
+    build: .
+    container_name: cooking-feedback-service
+    env_file:
+      - .env
+    command: python -m uvicorn feedback_service.app:app --host 0.0.0.0 --port 8003
+    ports:
+      - "8003:8003"
