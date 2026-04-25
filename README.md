@@ -35,6 +35,21 @@
 - `GET /feedback` — query param: `entry_id`
 - `GET /ratings` — query param: `entry_id`
 
+## Messaging
+
+`CompetitionService` publishes a message to an Azure Service Bus queue every time
+`GET /competitions/{competition_id}/entries` is called:
+
+```json
+{"event": "entries_viewed", "competition_id": 1, "entry_count": 2}
+```
+
+`FeedbackService` runs a background worker (started on app startup) that polls the
+same queue every 10 seconds, logs each received message, and completes it.
+
+The shared helper [`common/message_bus.py`](common/message_bus.py) exposes
+`publish_message()` and `receive_messages()` used by both services.
+
 ## Environment
 
 Create a `.env` file in the project root (see `.env.example`):
@@ -44,6 +59,8 @@ DB_USERNAME=your_username
 DB_PASSWORD=your_password
 DB_SERVER=tcp:your_server.database.windows.net
 DB_DATABASE=your_database
+SB_SEND_CONNECTION_STRING=Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=send;SharedAccessKey=<key>;EntityPath=<queue>
+SB_LISTEN_CONNECTION_STRING=Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=listen;SharedAccessKey=<key>;EntityPath=<queue>
 ```
 
 The Azure SQL firewall must allow your client IP. Add it in Azure Portal → SQL server → Networking.

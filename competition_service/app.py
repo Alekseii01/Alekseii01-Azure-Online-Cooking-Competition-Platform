@@ -1,10 +1,14 @@
 from datetime import datetime
 
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Session
 
 from common.database import Base, get_db
+from common.message_bus import publish_message
+
+load_dotenv()
 
 
 class Competition(Base):
@@ -115,7 +119,7 @@ def list_entries_by_competition(
         .order_by(Entry.id.asc())
         .all()
     )
-    return [
+    result = [
         {
             "id": r.id,
             "competition_id": r.competition_id,
@@ -125,4 +129,10 @@ def list_entries_by_competition(
         }
         for r in rows
     ]
+    publish_message({
+        "event": "entries_viewed",
+        "competition_id": competition_id,
+        "entry_count": len(result),
+    })
+    return result
 

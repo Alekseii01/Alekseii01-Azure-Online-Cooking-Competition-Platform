@@ -1,10 +1,19 @@
+import asyncio
+import logging
 from datetime import datetime
 
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, Text
 from sqlalchemy.orm import Session
 
 from common.database import Base, get_db
+from common.message_bus import receive_messages
+
+load_dotenv()
+
+logger = logging.getLogger("feedback_service")
+logging.basicConfig(level=logging.INFO)
 
 
 class Feedback(Base):
@@ -45,6 +54,23 @@ class Rating(Base):
 
 
 app = FastAPI(title="Feedback Service")
+
+
+async def _poll_queue() -> None:
+    """Background task: poll Service Bus queue every 10 seconds."""
+    while True:
+        try:
+            messages = receive_messages()
+            for body in messages:
+                logger.info("[ServiceBus] received: %s", body)
+        except Exception as exc:
+            logger.error("[ServiceBus] poll error: %s", exc)
+        await asyncio.sleep(10)
+
+
+@app.on_event("startup")
+async def startup_event() -> None:
+    asyncio.create_task(_poll_queue())
 
 
 @app.get("/health")

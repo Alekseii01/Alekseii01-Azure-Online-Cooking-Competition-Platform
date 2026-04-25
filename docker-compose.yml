@@ -38,6 +38,8 @@ services:
     container_name: cooking-feedback-service
     env_file:
       - .env
+    environment:
+      SB_QUEUE_NAME: alekseikarpukovich
     command: python -m uvicorn feedback_service.app:app --host 0.0.0.0 --port 8003
     ports:
       - "8003:8003"
