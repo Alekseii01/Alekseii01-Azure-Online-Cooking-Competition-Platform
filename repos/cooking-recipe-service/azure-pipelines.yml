@@ -1,0 +1,57 @@
+trigger:
+  - main
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  PYTHON_VERSION: "3.11"
+
+stages:
+  - stage: Lint
+    displayName: "Static Code Validation"
+    jobs:
+      - job: Flake8
+        displayName: "Run flake8"
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "$(PYTHON_VERSION)"
+            displayName: "Set up Python $(PYTHON_VERSION)"
+
+          - script: |
+              python -m pip install --upgrade pip
+              pip install flake8
+            displayName: "Install flake8"
+
+          - script: |
+              flake8 app.py common/ tests/ \
+                --max-line-length=120 \
+                --exclude=__pycache__,.venv
+            displayName: "Run flake8 lint check"
+
+  - stage: Test
+    displayName: "Unit Tests"
+    dependsOn: Lint
+    jobs:
+      - job: Pytest
+        displayName: "Run pytest"
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "$(PYTHON_VERSION)"
+            displayName: "Set up Python $(PYTHON_VERSION)"
+
+          - script: |
+              python -m pip install --upgrade pip
+              pip install -r requirements-dev.txt
+            displayName: "Install dependencies"
+
+          - script: |
+              pytest tests/ -v --tb=short
+            displayName: "Run unit tests"
+            env:
+              DB_USERNAME: "test"
+              DB_PASSWORD: "test"
+              DB_SERVER: "localhost"
+              DB_DATABASE: "test"
