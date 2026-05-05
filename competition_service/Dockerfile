@@ -17,4 +17,7 @@ RUN apt-get update \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY common/ ./common/
+COPY competition_service/ ./competition_service/
+
+CMD ["python", "-m", "uvicorn", "competition_service.app:app", "--host", "0.0.0.0", "--port", "8001"]

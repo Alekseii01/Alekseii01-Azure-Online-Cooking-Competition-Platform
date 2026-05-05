@@ -17,4 +17,7 @@ RUN apt-get update \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY common/ ./common/
+COPY recipe_service/ ./recipe_service/
+
+CMD ["python", "-m", "uvicorn", "recipe_service.app:app", "--host", "0.0.0.0", "--port", "8002"]
