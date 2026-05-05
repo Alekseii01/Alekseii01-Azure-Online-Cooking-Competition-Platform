@@ -1,0 +1,13 @@
+{
+  "name": "azure-online-cooking-competition-platform",
+  "version": "1.0.0",
+  "description": "Azure Online Cooking Competition Platform",
+  "scripts": {
+    "docker:up": "docker-compose up -d --build",
+    "docker:down": "docker-compose down",
+    "test": "source .venv/bin/activate && export PYTHONPATH=$PYTHONPATH:. && pytest **/tests/test_*.py",
+    "test:docker": "docker exec -it cooking-user-service pytest user_service/tests/test_user_app.py"
+  },
+  "author": "Aleksei Karpukovich",
+  "license": "ISC"
+}
